@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Japan Population Bubble Chart in 2022</title>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+    .node circle {
+      stroke: #3a403d;
+      stroke-width: 0.5px;
+    }
+
+    .node circle:hover {
+      stroke-width: 3px !important;
+      opacity: 1 !important;
+    }
+
+    #header {
+      margin: auto;
+      width: 60%;
+    }
+
+    h1 {
+      margin: auto;
+      padding: 10px 0 0 0;
+      font: bold 25px Verdana;
+    }
+
+    p {
+      margin: 0 15px 15px 20px;
+      padding: 0;
+    }
+
+    .tooltip {
+      position: absolute;
+      text-align: center;
+      background-color: white;
+      border: solid 1px #ccc;
+      padding: 6px;
+      border-radius: 5px;
+      pointer-events: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>D3 Force Bubble Chart – Japan Prefecture Population 2022</h1>
+    <p>All 47 prefectures sized by population.</p>
+  </div>
+  <div id="my_dataviz"></div>
+
+  <script>
+    var width = window.innerWidth,
+        height = window.innerHeight,
+        nodePadding = 2.5;
+
+    var svg = d3.select("#my_dataviz")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var Tooltip = d3.select("#my_dataviz")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    var simulation = d3.forceSimulation()
+      .force("forceX", d3.forceX().strength(.1).x(width / 2))
+      .force("forceY", d3.forceY().strength(.1).y(height / 2))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("charge", d3.forceManyBody().strength(-15));
+
+    // Embedded full data: all 47 prefectures
+    var graph = [
+      {"Prefecture":"Kyōto Prefecture","Population_2022":2550000},
+      {"Prefecture":"Ōsaka Prefecture","Population_2022":20352000},
+      {"Prefecture":"Fukuoka Prefecture","Population_2022":5116000},
+      {"Prefecture":"Ehime Prefecture","Population_2022":1306000},
+      {"Prefecture":"Yamagata Prefecture","Population_2022":1041000},
+      {"Prefecture":"Hokkaidō Prefecture","Population_2022":5250000},
+      {"Prefecture":"Aomori Prefecture","Population_2022":1246000},
+      {"Prefecture":"Iwate Prefecture","Population_2022":1223000},
+      {"Prefecture":"Miyagi Prefecture","Population_2022":2290000},
+      {"Prefecture":"Akita Prefecture","Population_2022":959000},
+      {"Prefecture":"Fukushima Prefecture","Population_2022":1838000},
+      {"Prefecture":"Ibaraki Prefecture","Population_2022":2854000},
+      {"Prefecture":"Tochigi Prefecture","Population_2022":1938000},
+      {"Prefecture":"Gunma Prefecture","Population_2022":1941000},
+      {"Prefecture":"Saitama Prefecture","Population_2022":7338000},
+      {"Prefecture":"Chiba Prefecture","Population_2022":6243000},
+      {"Prefecture":"Tōkyō Metropolis","Population_2022":13960000},
+      {"Prefecture":"Kanagawa Prefecture","Population_2022":9200000},
+      {"Prefecture":"Niigata Prefecture","Population_2022":2208000},
+      {"Prefecture":"Toyama Prefecture","Population_2022":1063000},
+      {"Prefecture":"Ishikawa Prefecture","Population_2022":1132000},
+      {"Prefecture":"Fukui Prefecture","Population_2022":778000},
+      {"Prefecture":"Yamanashi Prefecture","Population_2022":810000},
+      {"Prefecture":"Nagano Prefecture","Population_2022":2032000},
+      {"Prefecture":"Gifu Prefecture","Population_2022":1994000},
+      {"Prefecture":"Shizuoka Prefecture","Population_2022":3600000},
+      {"Prefecture":"Aichi Prefecture","Population_2022":7550000},
+      {"Prefecture":"Mie Prefecture","Population_2022":1797000},
+      {"Prefecture":"Shiga Prefecture","Population_2022":1413000},
+      {"Prefecture":"Nara Prefecture","Population_2022":1320000},
+      {"Prefecture":"Wakayama Prefecture","Population_2022":916000},
+      {"Prefecture":"Tottori Prefecture","Population_2022":553000},
+      {"Prefecture":"Shimane Prefecture","Population_2022":670000},
+      {"Prefecture":"Okayama Prefecture","Population_2022":1895000},
+      {"Prefecture":"Hiroshima Prefecture","Population_2022":2790000},
+      {"Prefecture":"Yamaguchi Prefecture","Population_2022":1350000},
+      {"Prefecture":"Tokushima Prefecture","Population_2022":720000},
+      {"Prefecture":"Kagawa Prefecture","Population_2022":950000},
+      {"Prefecture":"Kōchi Prefecture","Population_2022":692000},
+      {"Prefecture":"Saga Prefecture","Population_2022":813000},
+      {"Prefecture":"Nagasaki Prefecture","Population_2022":1311000},
+      {"Prefecture":"Kumamoto Prefecture","Population_2022":1758000},
+      {"Prefecture":"Ōita Prefecture","Population_2022":1122000},
+      {"Prefecture":"Miyazaki Prefecture","Population_2022":1066000},
+      {"Prefecture":"Kagoshima Prefecture","Population_2022":1583000},
+      {"Prefecture":"Okinawa Prefecture","Population_2022":1441000}
+    ];
+
+    graph.forEach(d => {
+      d.size = d.Population_2022 / 100000;
+      d.radius = d.size;
+    });
+
+    graph = graph.sort((a, b) => b.size - a.size);
+
+    var node = svg.append("g")
+      .attr("class", "node")
+      .selectAll("circle")
+      .data(graph)
+      .enter()
+      .append("circle")
+      .attr("r", d => d.radius)
+      .attr("fill", d => color(d.Prefecture))
+      .on("mouseover", function(d) {
+        Tooltip.transition().duration(200).style("opacity", .9);
+        Tooltip.html("<strong>" + d.Prefecture + "</strong><br/>" +
+                     d3.format(",")(d.Population_2022) + " people")
+               .style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mousemove", function(d) {
+        Tooltip.style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mouseleave", function(d) {
+        Tooltip.transition().duration(500).style("opacity", 0);
+      })
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+    simulation
+      .nodes(graph)
+      .force("collide", d3.forceCollide().strength(.7).radius(d => d.radius + nodePadding).iterations(1))
+      .on("tick", () => {
+        node
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y);
+      });
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(.03).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(.03);
+      d.fx = null;
+      d.fy = null;
+    }
+
+// Legend
+    var legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${width - 200}, 60)`);
+
+    var legendData = colorScale.domain();
+    legendData.unshift(0);  // start at 0
+
+    legend.selectAll("rect")
+      .data(legendData)
+      .enter()
+      .append("rect")
+      .attr("y", (d, i) => i * 20)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", d => colorScale(d));
+
+    legend.selectAll("text")
+      .data(legendData)
+      .enter()
+      .append("text")
+      .attr("x", 25)
+      .attr("y", (d, i) => i * 20 + 14)
+      .text((d, i) => {
+        if (i === legendData.length - 1) return `> ${d.toLocaleString()}`;
+        else return `${d.toLocaleString()} – ${legendData[i + 1].toLocaleString()}`;
+      });
+      
+  </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8" />
+<title>Japan Population by Prefectures in 2022</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js"></script>
+
+<style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    .legend {
+        background: white;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        position: absolute;
+        bottom: 30px;
+        left: 10px;
+        border-radius: 5px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .legend div { margin-bottom: 5px; }
+    .circle { display: inline-block; border-radius: 50%; width: 10px; height: 10px; margin-right: 5px; }
+    .map-overlay {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255,255,255,0.8);
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        border-radius: 5px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+</style>
+
+</head>
+
+<body>
+<div id="map"></div>
+<div class="legend">
+    <div><span class="circle" style="background:#2DC4B2; width:6px; height:6px;"></span> Low Population</div>
+    <div><span class="circle" style="background:#3BB3C3; width:12px; height:12px;"></span> Medium Population</div>
+    <div><span class="circle" style="background:#147dc4; width:18px; height:18px;"></span> High Population</div>
+</div>
+<div class="map-overlay" id="zoom-level">Zoom: 4.5</div>
+
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoicGhhcGEiLCJhIjoiY203bWFqbGxtMGd5NDJucHZ0YWt0NjVxNyJ9.ztwPq5k3xeHAOeWCIBymuw';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/phapa/cm9a8hwpe001301sqacbage8p',
+        center: [138.2529, 36.2048],
+        zoom: 4.5
+    });
+
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.FullscreenControl());
+
+    const zoomDisplay = document.getElementById('zoom-level');
+    map.on('zoom', () => {
+        zoomDisplay.innerHTML = 'Zoom: ' + map.getZoom().toFixed(2);
+    });
+
+    map.on('load', function () {
+      map.addLayer({
+        'id': 'Japan_Prefecture_Population_2-0uaenu',
+        'type': 'circle',
+        'source': {
+          type: 'vector',
+          url: 'mapbox://phapa.2ohbnnnq'
+        },
+        'source-layer': 'Japan_Prefecture_Population_2-0uaenu',
+        'layout': {
+          'visibility': 'visible'
+        },
+        'paint': {
+          'circle-color': [
+              'interpolate',
+              ['linear'],
+              ['get', 'Population_2022'],
+              500000, '#2DC4B2',
+              5000000, '#3BB3C3',
+              10000000, '#669EC4'
+          ],
+          'circle-opacity': 0.8,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff',
+          'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['get', 'Population_2022'],
+              500000, 4,
+              10000000, 18
+          ]
+        }
+      });
+
+      var mypopup = new mapboxgl.Popup({ offset: [0, -15], closeButton: false });
+
+      map.on('mouseenter', 'Japan_Prefecture_Population_2-0uaenu', function (e) {
+        map.getCanvas().style.cursor = 'pointer';
+        mypopup
+          .setLngLat(e.lngLat)
+          .setHTML("<h3>" + e.features[0].properties.Prefecture + "</h3><p>Population: " + e.features[0].properties.Population_2022.toLocaleString() + "</p>")
+          .addTo(map);
+      });
+
+      map.on('mouseleave', 'Japan_Prefecture_Population_2-0uaenu', function () {
+        map.getCanvas().style.cursor = '';
+        mypopup.remove();
+      });
+
+      map.on('mousemove', 'Japan_Prefecture_Population_2-0uaenu', function (e) {
+        map.setPaintProperty('Japan_Prefecture_Population_2-0uaenu', 'circle-color', [
+          'case',
+          ['==', ['get', 'Prefecture'], e.features[0].properties.Prefecture], '#ec00ff',
+          ['interpolate',
+              ['linear'],
+              ['get', 'Population_2022'],
+              500000, '#2DC4B2',
+              5000000, '#3BB3C3',
+              10000000, '#669EC4'
+          ]
+        ]);
+      });
+
+      map.on('mouseleave', 'Japan_Prefecture_Population_2-0uaenu', function () {
+        map.setPaintProperty('Japan_Prefecture_Population_2-0uaenu', 'circle-color', [
+          'interpolate',
+          ['linear'],
+          ['get', 'Population_2022'],
+          500000, '#2DC4B2',
+          5000000, '#3BB3C3',
+          10000000, '#669EC4'
+        ]);
+      });
+    });
+</script>
+</body>
+</html>
