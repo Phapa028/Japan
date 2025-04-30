@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gini Index Bar Chart - Japan</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .bar {
+            fill: #4682B4;
+        }
+        .bar:hover {
+            fill: #FF7F50;
+        }
+        .axis-label {
+            font-size: 12px;
+        }
+        .label-text {
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            fill: #444;
+        }
+    </style>
+</head>
+<body>
+    <h2>Gini Index & Poverty Indicators for Japan (2008-2013)</h2>
+    <svg width="600" height="350"></svg>
+
+    <script>
+        const data = [
+            { year: 2008, gini: 34.8, poverty: 15 },
+            { year: 2010, gini: 32.1, poverty: 14.5 },
+            { year: 2013, gini: 32.9, poverty: 15.2 }
+        ];
+
+        const svg = d3.select("svg"),
+              margin = { top: 30, right: 20, bottom: 40, left: 50 },
+              width = +svg.attr("width") - margin.left - margin.right,
+              height = +svg.attr("height") - margin.top - margin.bottom,
+              g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand()
+                    .domain(data.map(d => d.year))
+                    .rangeRound([0, width])
+                    .padding(0.3);
+
+        const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.gini + 5)])
+                    .nice()
+                    .range([height, 0]);
+
+        g.append("g")
+            .attr("class", "axis-label")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+
+        g.append("g")
+            .attr("class", "axis-label")
+            .call(d3.axisLeft(y));
+
+        // Gini index bars
+        g.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(d.year))
+            .attr("y", d => y(d.gini))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.gini));
+
+        // Gini index labels
+        g.selectAll(".label-text")
+            .data(data)
+            .enter().append("text")
+            .attr("class", "label-text")
+            .attr("x", d => x(d.year) + x.bandwidth() / 2)
+            .attr("y", d => y(d.gini) - 10)
+            .text(d => `Gini: ${d.gini}%`);
+
+
+    </script>
+</body>
+</html>
